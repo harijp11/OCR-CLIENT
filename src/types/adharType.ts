@@ -38,3 +38,12 @@ export interface response{
      success:boolean,
     message:string
 }
+
+export interface CustomError extends Error{
+    response:{
+        data:{
+            success:boolean
+            message:string
+        }
+    }
+}

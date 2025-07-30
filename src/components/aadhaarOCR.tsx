@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { uploadImage } from '@/services/cloudinaryService';
+import { deleteImageFromCloudinary, uploadImage } from '@/services/cloudinaryService';
 import { sendAadhaarImages } from '@/services/ocrService';
 import { saveAadharData } from '@/services/ocrService'; // Adjust the import path as needed
-import type { AadhaarInput } from '@/types/adharType';
+import type { AadhaarInput, CustomError } from '@/types/adharType';
 import { useNavigate } from 'react-router-dom';
+import { extractPublicIdFromUrl } from '@/utils/extractPublicId';
 
 interface AadhaarDetails {
   name: string | null;
@@ -105,18 +106,26 @@ const AadhaarOCR: React.FC = () => {
       setDetails(response.parsedData);
       setEditedDetails({
         dob: response.parsedData.dob,
-        aadharNumber: response.parsedData.aadharNumber,
+        aadharNumber: response.parsedData.aadhaarNumber,
         gender: response.parsedData.gender,
         name: response.parsedData.name,
         fatherName: response.parsedData.fatherName,
         address: response.parsedData.address,
         pinCode: response.parsedData.pinCode || '',
       });
+
+        const frontPublicId = extractPublicIdFromUrl(frontImageUrl);
+       const backPublicId = extractPublicIdFromUrl(backImageUrl);
+
+       await deleteImageFromCloudinary(frontPublicId);
+      await deleteImageFromCloudinary(backPublicId);
+
       addToast('Aadhaar details extracted successfully!', 'success');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred.';
-      setError(errorMessage);
-      addToast(errorMessage, 'error');
+      const errorMessage = err as CustomError 
+      console.log(err)
+      setError(errorMessage.response.data.message);
+      addToast(errorMessage.response.data.message, 'error');
     } finally {
       setLoading(false);
     }

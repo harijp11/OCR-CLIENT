@@ -1,3 +1,5 @@
+import axiosInstance from "@/api/AxiosInstance";
+import type { CustomError } from "@/types/adharType";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -21,3 +23,17 @@ export const uploadImage = async (file: File | null): Promise<string | null> => 
         throw error;
     }
 }
+
+
+export const deleteImageFromCloudinary = async (publicId: string) => {
+  try {
+    const response = await axiosInstance.post("/cloudinary/delete", { publicId });
+    return response.data;
+  } catch (error) {
+    const err  = error as CustomError
+    console.error("Error deleting image:", err);
+    throw new Error(err?.response?.data?.message || "Failed to delete image");
+  }
+};
+
+
